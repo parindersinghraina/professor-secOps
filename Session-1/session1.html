@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Session 1 – DevSecOps & Shift-Left Security | Professor SecOps</title>
+<style>
+  :root{
+    --bg:#0d1117;--surface:#161b22;--surface2:#1f2937;--border:#30363d;
+    --accent:#58a6ff;--accent2:#3fb950;--accent3:#f78166;--accent4:#d2a8ff;
+    --warn:#e3b341;--text:#c9d1d9;--muted:#8b949e;--white:#f0f6fc;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;line-height:1.7;}
+
+  /* NAV */
+  nav{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;
+      display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+  .nav-brand{color:var(--accent);font-weight:700;font-size:1.1rem;}
+  .nav-badge{background:#21262d;border:1px solid var(--border);border-radius:20px;
+             padding:4px 14px;font-size:.78rem;color:var(--warn);}
+  .nav-tabs{display:flex;gap:4px;}
+  .nav-tab{background:none;border:none;color:var(--muted);cursor:pointer;padding:6px 14px;
+           border-radius:6px;font-size:.85rem;transition:all .2s;}
+  .nav-tab:hover,.nav-tab.active{background:var(--accent);color:#000;font-weight:600;}
+
+  /* HERO */
+  .hero{background:linear-gradient(135deg,#0d1117 0%,#1a1f35 50%,#0d1117 100%);
+        border-bottom:1px solid var(--border);padding:48px 32px;text-align:center;}
+  .hero-label{color:var(--accent);font-size:.8rem;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+  .hero h1{color:var(--white);font-size:2.2rem;font-weight:800;margin-bottom:12px;}
+  .hero p{color:var(--muted);max-width:620px;margin:0 auto 24px;}
+  .hero-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+  .tag{background:var(--surface2);border:1px solid var(--border);border-radius:20px;
+       padding:4px 14px;font-size:.78rem;}
+  .tag.green{border-color:var(--accent2);color:var(--accent2);}
+  .tag.blue{border-color:var(--accent);color:var(--accent);}
+  .tag.purple{border-color:var(--accent4);color:var(--accent4);}
+  .tag.orange{border-color:var(--warn);color:var(--warn);}
+
+  /* LAYOUT */
+  .container{max-width:1100px;margin:0 auto;padding:32px 24px;}
+  .page{display:none;} .page.active{display:block;}
+
+  /* CARDS */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+        padding:28px;margin-bottom:24px;}
+  .card-title{color:var(--white);font-size:1.1rem;font-weight:700;margin-bottom:16px;
+              display:flex;align-items:center;gap:8px;}
+  .card-title .icon{font-size:1.3rem;}
+
+  /* SECTIONS */
+  h2{color:var(--white);font-size:1.3rem;font-weight:700;margin:32px 0 12px;
+     display:flex;align-items:center;gap:8px;}
+  h3{color:var(--accent);font-size:1rem;font-weight:600;margin:20px 0 8px;}
+  p{margin-bottom:12px;color:var(--text);}
+
+  /* COMPARE TABLE */
+  table{width:100%;border-collapse:collapse;margin:16px 0;}
+  th{background:var(--surface2);color:var(--accent);padding:10px 14px;text-align:left;
+     font-size:.85rem;border-bottom:2px solid var(--accent);}
+  td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:.88rem;}
+  tr:hover td{background:#1a1f2e;}
+
+  /* CODE */
+  pre,code{font-family:'Courier New',monospace;}
+  pre{background:#010409;border:1px solid var(--border);border-radius:8px;
+      padding:20px;overflow-x:auto;font-size:.82rem;line-height:1.6;}
+  code{background:#21262d;padding:2px 6px;border-radius:4px;font-size:.82rem;color:var(--accent2);}
+
+  /* PIPELINE VIZ */
+  .pipeline{display:flex;align-items:center;flex-wrap:wrap;gap:0;margin:16px 0;}
+  .pip-stage{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+             padding:10px 16px;text-align:center;font-size:.78rem;min-width:100px;}
+  .pip-stage.security{border-color:var(--accent2);background:#0d1f12;}
+  .pip-stage .s-label{color:var(--muted);font-size:.68rem;margin-bottom:2px;}
+  .pip-stage .s-name{color:var(--white);font-weight:600;}
+  .pip-arrow{color:var(--muted);font-size:1.2rem;margin:0 4px;}
+
+  /* ALERTS */
+  .alert{border-radius:8px;padding:16px 20px;margin:16px 0;border-left:4px solid;}
+  .alert-info{background:#0d1f2d;border-color:var(--accent);}
+  .alert-success{background:#0d1f12;border-color:var(--accent2);}
+  .alert-warn{background:#1f1a0d;border-color:var(--warn);}
+  .alert-danger{background:#1f0d0d;border-color:var(--accent3);}
+  .alert-title{font-weight:700;margin-bottom:4px;}
+  .alert-info .alert-title{color:var(--accent);}
+  .alert-success .alert-title{color:var(--accent2);}
+  .alert-warn .alert-title{color:var(--warn);}
+  .alert-danger .alert-title{color:var(--accent3);}
+
+  /* CHECKLIST */
+  .checklist{list-style:none;}
+  .checklist li{padding:8px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;}
+  .checklist li:last-child{border:none;}
+  .check-icon{font-size:1rem;margin-top:2px;}
+
+  /* FLASHCARDS */
+  .fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:16px;}
+  .fc{perspective:800px;height:180px;cursor:pointer;}
+  .fc-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;
+            transition:transform .55s cubic-bezier(.4,2,.6,1);}
+  .fc.flipped .fc-inner{transform:rotateY(180deg);}
+  .fc-front,.fc-back{position:absolute;inset:0;border-radius:12px;padding:20px;
+                     backface-visibility:hidden;display:flex;flex-direction:column;justify-content:center;}
+  .fc-front{background:var(--surface2);border:1px solid var(--border);}
+  .fc-back{background:linear-gradient(135deg,#0d1f2d,#0d1f12);border:1px solid var(--accent2);
+           transform:rotateY(180deg);}
+  .fc-cat{font-size:.68rem;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+  .fc-q{color:var(--white);font-weight:700;font-size:.92rem;line-height:1.4;}
+  .fc-a{color:var(--accent2);font-size:.85rem;line-height:1.5;}
+  .fc-hint{color:var(--muted);font-size:.72rem;margin-top:8px;}
+
+  /* LAB STEPS */
+  .lab-steps{counter-reset:step;}
+  .lab-step{display:flex;gap:16px;margin-bottom:20px;align-items:flex-start;}
+  .lab-step-num{background:var(--accent);color:#000;font-weight:800;width:32px;height:32px;
+                border-radius:50%;display:flex;align-items:center;justify-content:center;
+                font-size:.85rem;flex-shrink:0;margin-top:2px;}
+  .lab-step-content h4{color:var(--white);font-weight:600;margin-bottom:6px;}
+
+  /* PROGRESS */
+  .progress-bar{background:var(--surface2);border-radius:20px;height:8px;overflow:hidden;margin:8px 0;}
+  .progress-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+
+  /* ROADMAP */
+  .roadmap{position:relative;padding-left:28px;}
+  .roadmap::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:2px;background:var(--border);}
+  .rm-item{position:relative;margin-bottom:24px;}
+  .rm-item::before{content:'';position:absolute;left:-22px;top:6px;width:12px;height:12px;
+                   border-radius:50%;background:var(--surface2);border:2px solid var(--border);}
+  .rm-item.active::before{background:var(--accent);border-color:var(--accent);box-shadow:0 0 8px var(--accent);}
+  .rm-item.done::before{background:var(--accent2);border-color:var(--accent2);}
+  .rm-label{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:1px;}
+  .rm-title{color:var(--white);font-weight:600;margin:2px 0;}
+  .rm-desc{color:var(--muted);font-size:.83rem;}
+
+  /* QUIZ */
+  .quiz-q{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:16px;}
+  .quiz-q-num{color:var(--accent);font-size:.78rem;font-weight:700;margin-bottom:6px;}
+  .quiz-q-text{color:var(--white);font-weight:600;margin-bottom:14px;}
+  .quiz-opts{display:flex;flex-direction:column;gap:8px;}
+  .quiz-opt{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+            padding:10px 14px;cursor:pointer;font-size:.88rem;text-align:left;color:var(--text);
+            transition:all .2s;}
+  .quiz-opt:hover{border-color:var(--accent);color:var(--accent);}
+  .quiz-opt.correct{background:#0d1f12;border-color:var(--accent2);color:var(--accent2);}
+  .quiz-opt.wrong{background:#1f0d0d;border-color:var(--accent3);color:var(--accent3);}
+  .quiz-explain{margin-top:10px;padding:10px 14px;background:#010409;border-radius:6px;
+                font-size:.83rem;color:var(--muted);display:none;}
+  .quiz-explain.show{display:block;}
+  .quiz-score{text-align:center;padding:24px;display:none;}
+  .quiz-score h3{color:var(--white);font-size:1.4rem;margin-bottom:8px;}
+  .score-num{font-size:3rem;font-weight:800;color:var(--accent2);}
+  .btn{background:var(--accent);color:#000;border:none;border-radius:8px;padding:10px 24px;
+       font-weight:700;cursor:pointer;font-size:.9rem;transition:all .2s;}
+  .btn:hover{opacity:.85;}
+  .btn-outline{background:none;border:1px solid var(--accent);color:var(--accent);}
+  .btn-outline:hover{background:var(--accent);color:#000;}
+
+  /* RESOURCES */
+  .res-item{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);}
+  .res-item:last-child{border:none;}
+  .res-icon{font-size:1.5rem;margin-top:2px;}
+  .res-title{color:var(--white);font-weight:600;margin-bottom:3px;}
+  .res-desc{color:var(--muted);font-size:.83rem;}
+  .res-link{color:var(--accent);font-size:.8rem;text-decoration:none;}
+  .res-link:hover{text-decoration:underline;}
+
+  /* SUMMARY */
+  .summary-items{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+  @media(max-width:600px){.summary-items{grid-template-columns:1fr;}}
+  .s-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;
+          display:flex;align-items:flex-start;gap:10px;}
+  .s-item-icon{font-size:1.2rem;}
+  .s-item-text{font-size:.85rem;color:var(--text);}
+
+  /* RESPONSIVE */
+  @media(max-width:700px){
+    .hero h1{font-size:1.5rem;} .pipeline{gap:4px;} .pip-stage{min-width:80px;font-size:.7rem;}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">🛡️ Professor SecOps</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('overview')">📋 Overview</button>
+    <button class="nav-tab" onclick="showPage('theory')">🎓 Theory</button>
+    <button class="nav-tab" onclick="showPage('lab')">💻 Lab</button>
+    <button class="nav-tab" onclick="showPage('flashcards')">🃏 Flashcards</button>
+    <button class="nav-tab" onclick="showPage('quiz')">🧠 Quiz</button>
+    <button class="nav-tab" onclick="showPage('resources')">📚 Resources</button>
+  </div>
+  <div class="nav-badge">📅 Month 1 · Week 1</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-label">Session 1 of 96</div>
+  <h1>What is DevSecOps?<br>The Shift-Left Security Mindset</h1>
+  <p>Your journey from Lead QA Engineer to Federal DevSecOps Engineer starts here. This session builds the mental model everything else will rest on.</p>
+  <div class="hero-tags">
+    <span class="tag green">🇨🇦 GC Context</span>
+    <span class="tag blue">Azure Ready</span>
+    <span class="tag purple">ITSG-33 Aligned</span>
+    <span class="tag orange">⏱ ~45 min</span>
+  </div>
+</div>
+
+<!-- ============================================================ OVERVIEW ============================================================ -->
+<div id="page-overview" class="page active container">
+
+  <div class="card">
+    <div class="card-title"><span class="icon">📋</span> Session Briefing</div>
+    <p>Welcome, Parinder. You have 9 years building automated test pipelines — you already <em>think</em> in quality gates, early defect detection, and shift-left testing. Today we're going to re-map that entire mental model onto <strong>security</strong>.</p>
+    <p>By the end of this session you will be able to explain DevSecOps to a federal hiring manager, draw the shift-left pipeline, and articulate why this matters for GC environments specifically.</p>
+
+    <h3>🎯 Learning Objectives</h3>
+    <ul class="checklist">
+      <li><span class="check-icon">✅</span> Define DevSecOps and contrast it with traditional DevOps</li>
+      <li><span class="check-icon">✅</span> Explain "Shift-Left Security" with your QA background as the bridge</li>
+      <li><span class="check-icon">✅</span> Identify where security fits in a CI/CD pipeline (stages, gates, tools)</li>
+      <li><span class="check-icon">✅</span> Understand why the Government of Canada mandates DevSecOps practices</li>
+      <li><span class="check-icon">✅</span> Name the 3 pillars of DevSecOps culture: People, Process, Technology</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">🗺️</span> Your 6-Month Roadmap — You Are Here</div>
+    <div class="roadmap">
+      <div class="rm-item active">
+        <div class="rm-label">Month 1 · Week 1 · Session 1</div>
+        <div class="rm-title">👈 YOU ARE HERE — DevSecOps Foundations</div>
+        <div class="rm-desc">Mindset, culture, shift-left, GC context</div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-label">Month 1 · Week 1 · Session 2</div>
+        <div class="rm-title">DevOps vs DevSecOps — The Security Layer</div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-label">Month 1 · Sessions 3–16</div>
+        <div class="rm-title">GC Landscape, Zero Trust, Azure, Linux, Git, OWASP</div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-label">Month 2</div>
+        <div class="rm-title">CI/CD Security & Pipeline Hardening</div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-label">Month 5</div>
+        <div class="rm-title">🏆 AZ-500 Certified — Portfolio Complete</div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-label">Month 6</div>
+        <div class="rm-title">🎯 Federal DevSecOps Role — Ottawa / Big Tech</div>
+      </div>
+    </div>
+
+    <h3>📊 Progress This Month</h3>
+    <div style="display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-bottom:4px;">
+      <span>Month 1 Progress</span><span>1 / 16 sessions</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:6%"></div></div>
+    <div style="display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-bottom:4px;margin-top:12px;">
+      <span>Overall Roadmap</span><span>1 / 96 sessions</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:1%"></div></div>
+  </div>
+
+</div>
+
+<!-- ============================================================ THEORY ============================================================ -->
+<div id="page-theory" class="page container">
+
+  <h2>🎓 Theory Block — The Shift-Left Security Mindset</h2>
+
+  <div class="alert alert-info">
+    <div class="alert-title">🔗 Bridge from Your QA World</div>
+    You've spent 9 years catching bugs early. You know that a bug found in production costs 10–100× more to fix than one caught in a unit test. <strong>DevSecOps applies this exact principle to security vulnerabilities.</strong> A vulnerability found in code review = 1 hour to fix. The same vulnerability found after a GC breach = months of incident response, public hearings, and career-defining consequences.
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">🔍</span> What IS DevSecOps?</div>
+    <p><strong>DevSecOps</strong> = <strong>Dev</strong>elopment + <strong>Sec</strong>urity + <strong>Op</strong>erations</p>
+    <p>It's the practice of integrating security as a <em>shared responsibility</em> across the entire software development lifecycle — not as a gate at the end, but as a continuous thread woven through every stage.</p>
+
+    <div class="alert alert-warn">
+      <div class="alert-title">⚠️ The Old World (Pre-DevSecOps)</div>
+      Dev builds for 6 months → throws code over the wall to Ops → Security does a pentest 2 weeks before launch → Security says "there are 47 critical vulnerabilities" → Dev says "we can't delay the launch" → Security says "okay but sign off" → vulnerability ships to production → breach happens 8 months later. Sound familiar?
+    </div>
+
+    <div class="alert alert-success">
+      <div class="alert-title">✅ The DevSecOps World</div>
+      Security is automated into every pipeline stage. SAST scans on every commit. Dependency checks on every build. Container image scanning before every deployment. Security gates that block bad code — automatically, just like your quality gates block failing tests.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">⬅️</span> Shift-Left Security — The Core Concept</div>
+    <p>Imagine your CI/CD pipeline as a timeline going left → right:</p>
+
+    <div class="pipeline">
+      <div class="pip-stage"><div class="s-label">Stage 1</div><div class="s-name">📝 Code</div></div>
+      <div class="pip-arrow">→</div>
+      <div class="pip-stage security"><div class="s-label">🔒 SHIFT LEFT</div><div class="s-name">SAST Scan</div></div>
+      <div class="pip-arrow">→</div>
+      <div class="pip-stage"><div class="s-label">Stage 2</div><div class="s-name">🔨 Build</div></div>
+      <div class="pip-arrow">→</div>
+      <div class="pip-stage security"><div class="s-label">🔒 SHIFT LEFT</div><div class="s-name">SCA + Secrets</div></div>
+      <div class="pip-arrow">→</div>
+      <div class="pip-stage"><div class="s-label">Stage 3</div><div class="s-name">🧪 Test</div></div>
+      <div class="pip-arrow">→</div>
+      <div class="pip-stage security"><div class="s-label">🔒 SHIFT LEFT</div><div class="s-name">DAST Scan</div></div>
+      <div class="pip-arrow">→</div>
+      <div class="pip-stage"><div class="s-label">Stage 4</div><div class="s-name">🚀 Deploy</div></div>
+      <div class="pip-arrow">→</div>
+      <div class="pip-stage security"><div class="s-label">🔒 RUNTIME</div><div class="s-name">Monitor</div></div>
+    </div>
+
+    <p style="margin-top:16px;">"Shifting left" means moving security checks as far to the LEFT as possible — catching issues at the code stage instead of after deployment.</p>
+
+    <h3>Your QA Analogy 🎯</h3>
+    <table>
+      <tr><th>QA World (You Know This)</th><th>DevSecOps World (What's New)</th></tr>
+      <tr><td>Unit tests catch bugs in code</td><td>SAST scans catch vulnerabilities in code</td></tr>
+      <tr><td>Integration tests catch API bugs</td><td>DAST scans catch runtime vulnerabilities</td></tr>
+      <tr><td>Quality gate blocks bad builds</td><td>Security gate blocks vulnerable builds</td></tr>
+      <tr><td>Dependency check (outdated libs)</td><td>SCA catches known CVEs in dependencies</td></tr>
+      <tr><td>.env files in test configs</td><td>Secret scanning catches creds in code</td></tr>
+      <tr><td>Test report = artifact</td><td>SBOM + security report = artifact</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">🏛️</span> The 3 Pillars of DevSecOps</div>
+    <table>
+      <tr><th>Pillar</th><th>What It Means</th><th>GC Federal Example</th></tr>
+      <tr>
+        <td><strong>👥 People</strong></td>
+        <td>Security is everyone's job — not just the security team. Dev, Ops, and Security collaborate daily.</td>
+        <td>GC IT teams now require developers to complete SA&A (Security Assessment & Authorization) training</td>
+      </tr>
+      <tr>
+        <td><strong>⚙️ Process</strong></td>
+        <td>Bake security into your SDLC, change management, and incident response processes.</td>
+        <td>ITSG-33 risk management framework defines the process GC departments must follow</td>
+      </tr>
+      <tr>
+        <td><strong>🔧 Technology</strong></td>
+        <td>Automate security testing, compliance checks, and monitoring using tools in the pipeline.</td>
+        <td>Azure Defender, Sentinel, Checkmarx, Aqua — tools used in GC cloud environments</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">🇨🇦</span> Why Does the Government of Canada Care?</div>
+    <p>The GC is the largest employer in Canada and manages some of the most sensitive data in the country — tax records (CRA), immigration files (IRCC), military intelligence (DND), health data (HC), and more. A breach isn't just an embarrassment — it's a national security event.</p>
+
+    <div class="alert alert-danger">
+      <div class="alert-title">🔴 Real GC Breach Context</div>
+      In 2020, the GCKey system (used by millions of Canadians to access government services) was breached via credential stuffing. ~9,000 accounts compromised. ESDC and CERB applications were fraudulently accessed. This happened because security wasn't built into the authentication pipeline — it was bolted on. DevSecOps practices like automated security testing and rate-limiting would have caught this earlier.
+    </div>
+
+    <h3>The GC Security Mandate</h3>
+    <p>The Treasury Board Secretariat (TBS) now mandates DevSecOps practices through:</p>
+    <ul class="checklist">
+      <li><span class="check-icon">📜</span><span><strong>ITSG-33</strong> — IT Security Risk Management: A Lifecycle Approach — the GC's security bible</span></li>
+      <li><span class="check-icon">📜</span><span><strong>PBMM</strong> — Protected B, Medium Integrity, Medium Availability — the cloud security baseline</span></li>
+      <li><span class="check-icon">📜</span><span><strong>GC Zero Trust Strategy (2023)</strong> — "never trust, always verify" across all GC systems</span></li>
+      <li><span class="check-icon">📜</span><span><strong>CCCS Cloud Medium Profile</strong> — 63 controls for cloud workloads hosting GC data</span></li>
+    </ul>
+    <p style="margin-top:12px;"><em>A federal security auditor will ask you: "How do you map your pipeline security controls to ITSG-33 safeguards?" — You'll be able to answer this by Month 3.</em></p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">🔑</span> Key Terms to Master This Session</div>
+    <table>
+      <tr><th>Term</th><th>Definition</th><th>Why It Matters for GC</th></tr>
+      <tr><td><code>SDLC</code></td><td>Software Development Lifecycle — plan, code, build, test, deploy, monitor</td><td>GC requires security at every SDLC phase per ITSG-33</td></tr>
+      <tr><td><code>SAST</code></td><td>Static Application Security Testing — scans source code without running it</td><td>Catches injection flaws, hardcoded creds before build</td></tr>
+      <tr><td><code>DAST</code></td><td>Dynamic Application Security Testing — tests running application</td><td>Required for GC web-facing applications</td></tr>
+      <tr><td><code>SCA</code></td><td>Software Composition Analysis — checks open source dependencies for CVEs</td><td>Log4Shell was an SCA failure — GC systems were hit</td></tr>
+      <tr><td><code>SBOM</code></td><td>Software Bill of Materials — inventory of all software components</td><td>TBS now recommends SBOM for GC software supply chain</td></tr>
+      <tr><td><code>SA&A</code></td><td>Security Assessment & Authorization — GC's ATO process</td><td>Every GC system must go through SA&A before production</td></tr>
+      <tr><td><code>CVE</code></td><td>Common Vulnerability and Exposure — unique ID for known vulnerabilities</td><td>SCA tools check against the CVE database daily</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<!-- ============================================================ LAB ============================================================ -->
+<div id="page-lab" class="page container">
+
+  <h2>💻 Practical Lab — Your First Shift-Left Security Scan</h2>
+
+  <div class="alert alert-info">
+    <div class="alert-title">🎯 Lab Scenario (Federal Context)</div>
+    You're a DevSecOps engineer at a GC department. A developer just pushed code to a new repository. Before this goes anywhere near a pipeline, you need to: (1) scan it for secrets/credentials, (2) scan it for vulnerable dependencies, and (3) run a SAST scan. You'll do all 3 using free tools today.
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">🛠️</span> Tools You'll Use (All Free)</div>
+    <table>
+      <tr><th>Tool</th><th>Type</th><th>Install</th></tr>
+      <tr><td><strong>git-secrets</strong> or <strong>truffleHog</strong></td><td>Secret Scanner</td><td>npm / pip / brew</td></tr>
+      <tr><td><strong>Semgrep</strong></td><td>SAST</td><td>pip install semgrep</td></tr>
+      <tr><td><strong>npm audit</strong> or <strong>pip-audit</strong></td><td>SCA</td><td>Built into npm/pip</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">🔬</span> Lab Steps</div>
+
+    <div class="lab-steps">
+      <div class="lab-step">
+        <div class="lab-step-num">1</div>
+        <div class="lab-step-content">
+          <h4>Create a "vulnerable" test repository</h4>
+          <p>Create a directory and add an intentionally insecure Python file to simulate a GC developer's mistake:</p>
+          <pre><code>mkdir gc-devsecops-lab && cd gc-devsecops-lab
+git init
+
+# Create a "vulnerable" Python file
+cat > app.py << 'EOF'
+import boto3
+import requests
+
+# BAD: Hardcoded credentials (a real federal nightmare)
+AWS_ACCESS_KEY = "AKIAIOSFODNN7EXAMPLE"
+AWS_SECRET_KEY = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+DB_PASSWORD = "SuperSecret123!"
+
+def get_user_data(user_id):
+    # BAD: SQL injection vulnerability
+    query = "SELECT * FROM users WHERE id = " + user_id
+    return query
+
+def fetch_data(url):
+    # BAD: No SSL verification (ITSG-33 violation)
+    return requests.get(url, verify=False)
+EOF
+
+git add . && git commit -m "initial commit"</code></pre>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="lab-step-num">2</div>
+        <div class="lab-step-content">
+          <h4>Install and run Semgrep (SAST Scan)</h4>
+          <pre><code># Install Semgrep
+pip install semgrep
+
+# Run a SAST scan against the Python file
+semgrep --config=auto app.py
+
+# For a GC-relevant ruleset (OWASP Top 10):
+semgrep --config=p/owasp-top-ten app.py</code></pre>
+          <p>📋 <strong>Expected output:</strong> Semgrep will flag the SQL injection pattern and the disabled SSL verification as security issues.</p>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="lab-step-num">3</div>
+        <div class="lab-step-content">
+          <h4>Run a Secret Scan with truffleHog</h4>
+          <pre><code># Install truffleHog
+pip install trufflehog3
+
+# Scan the local repo for secrets
+trufflehog3 filesystem . --output report.json
+
+# Or use the simpler git-secrets approach:
+pip install detect-secrets
+detect-secrets scan > .secrets.baseline
+detect-secrets audit .secrets.baseline</code></pre>
+          <p>📋 <strong>Expected output:</strong> The tool will find the AWS_ACCESS_KEY and DB_PASSWORD as high-entropy strings / known secret patterns.</p>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="lab-step-num">4</div>
+        <div class="lab-step-content">
+          <h4>Create a requirements.txt with a vulnerable library</h4>
+          <pre><code># Add a requirements file with a known-vulnerable package
+cat > requirements.txt << 'EOF'
+requests==2.18.4
+flask==0.12.2
+pyyaml==3.13
+EOF
+
+# Run SCA scan
+pip install pip-audit
+pip-audit -r requirements.txt</code></pre>
+          <p>📋 <strong>Expected output:</strong> pip-audit will flag CVEs in flask 0.12.2 and pyyaml 3.13 — these are real known vulnerabilities.</p>
+        </div>
+      </div>
+
+      <div class="lab-step">
+        <div class="lab-step-num">5</div>
+        <div class="lab-step-content">
+          <h4>Document your findings like a real GC security engineer</h4>
+          <p>Create a simple findings report:</p>
+          <pre><code>cat > SECURITY_FINDINGS.md << 'EOF'
+# Security Scan Findings — GC DevSecOps Lab
+## Date: [Today's Date]
+## Engineer: Parinder
+## Scan Types: SAST, Secret Scan, SCA
+
+## CRITICAL FINDINGS
+| ID | Type | File | Issue | ITSG-33 Ref |
+|----|------|------|-------|-------------|
+| F-001 | Secret | app.py:6 | AWS Access Key hardcoded | AC-2 |
+| F-002 | Secret | app.py:7 | AWS Secret Key hardcoded | AC-2 |
+| F-003 | SAST | app.py:12 | SQL Injection vulnerability | SI-10 |
+| F-004 | SAST | app.py:17 | SSL verification disabled | SC-8 |
+| F-005 | SCA | requirements.txt | Flask 0.12.2 - CVE-2018-1000656 | SI-2 |
+| F-006 | SCA | requirements.txt | PyYAML 3.13 - CVE-2017-18342 | SI-2 |
+
+## REMEDIATION REQUIRED BEFORE PIPELINE PROCEEDS
+EOF</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-success">
+      <div class="alert-title">🎉 Lab Success Criteria</div>
+      You pass this lab if you can: (1) show Semgrep flagged the SQL injection, (2) show a secret scanner found at least one credential, (3) show pip-audit found at least one CVE. Paste or describe your output to Professor SecOps to verify.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">🏗️</span> Mini Portfolio Task</div>
+    <div class="alert alert-info">
+      <div class="alert-title">📌 Deliverable — Add to Your GitHub Portfolio</div>
+      <p>Create a GitHub repository called <code>gc-devsecops-portfolio</code>. In a folder called <code>session-01-shift-left</code>, commit:</p>
+      <ul style="margin-top:8px;padding-left:20px;">
+        <li>Your <code>app.py</code> (the vulnerable version)</li>
+        <li>Your <code>SECURITY_FINDINGS.md</code> report</li>
+        <li>A <code>README.md</code> that says: "This demonstrates shift-left security scanning using SAST (Semgrep), secret detection (detect-secrets), and SCA (pip-audit), aligned with ITSG-33 control family SI (System Integrity)."</li>
+      </ul>
+      <p style="margin-top:8px;"><strong>Federal hiring manager view:</strong> This repo entry shows you understand the WHY (ITSG-33), the HOW (tools), and can communicate findings professionally.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ FLASHCARDS ============================================================ -->
+<div id="page-flashcards" class="page container">
+
+  <h2>🃏 Flashcards — Session 1</h2>
+  <p style="color:var(--muted);margin-bottom:8px;">Click any card to reveal the answer. Master these before your next session.</p>
+
+  <div class="fc-grid">
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><div class="fc-cat">Core Concept</div>
+          <div class="fc-q">What does "Shift-Left Security" mean?</div>
+          <div class="fc-hint">👆 Click to flip</div></div>
+        <div class="fc-back"><div class="fc-a">Moving security testing and checks as early as possible in the SDLC — into the coding and build stages rather than just before or after deployment. Like catching bugs in unit tests instead of production.</div></div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><div class="fc-cat">Acronym</div>
+          <div class="fc-q">What is SAST and when does it run?</div>
+          <div class="fc-hint">👆 Click to flip</div></div>
+        <div class="fc-back"><div class="fc-a">Static Application Security Testing. Scans source code WITHOUT running it. Runs at the CODE or BUILD stage of the pipeline. Tools: Semgrep, SonarQube, Checkmarx. Catches injection flaws, hardcoded secrets, insecure patterns.</div></div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><div class="fc-cat">Acronym</div>
+          <div class="fc-q">What is DAST and when does it run?</div>
+          <div class="fc-hint">👆 Click to flip</div></div>
+        <div class="fc-back"><div class="fc-a">Dynamic Application Security Testing. Tests a RUNNING application by simulating attacks. Runs at the TEST stage. Tools: OWASP ZAP, Burp Suite. Catches runtime vulnerabilities SAST can't see.</div></div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><div class="fc-cat">Acronym</div>
+          <div class="fc-q">What is SCA and what real incident is it famous for?</div>
+          <div class="fc-hint">👆 Click to flip</div></div>
+        <div class="fc-back"><div class="fc-a">Software Composition Analysis — scans open-source dependencies for known CVEs. Famous for Log4Shell (CVE-2021-44228): Log4j vulnerability affected thousands of GC systems. SCA would have flagged the vulnerable version before deployment.</div></div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><div class="fc-cat">GC Compliance</div>
+          <div class="fc-q">What does ITSG-33 stand for and who publishes it?</div>
+          <div class="fc-hint">👆 Click to flip</div></div>
+        <div class="fc-back"><div class="fc-a">IT Security Guidance 33 — "IT Security Risk Management: A Lifecycle Approach." Published by the Communications Security Establishment (CSE). It's the GC's primary framework for managing security risks throughout the SDLC.</div></div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><div class="fc-cat">GC Compliance</div>
+          <div class="fc-q">What does PBMM stand for and what cloud does it apply to?</div>
+          <div class="fc-hint">👆 Click to flip</div></div>
+        <div class="fc-back"><div class="fc-a">Protected B, Medium Integrity, Medium Availability. The security baseline for GC cloud workloads handling sensitive (not secret) data. Azure has a PBMM blueprint. This is what most GC departments use for their cloud environments.</div></div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><div class="fc-cat">3 Pillars</div>
+          <div class="fc-q">What are the 3 pillars of DevSecOps?</div>
+          <div class="fc-hint">👆 Click to flip</div></div>
+        <div class="fc-back"><div class="fc-a">1. 👥 PEOPLE — Security is a shared responsibility across Dev, Sec, and Ops teams.<br>2. ⚙️ PROCESS — Security baked into SDLC, change management, IR processes.<br>3. 🔧 TECHNOLOGY — Automated security tools in every pipeline stage.</div></div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><div class="fc-cat">GC Context</div>
+          <div class="fc-q">What is SA&A in a GC context?</div>
+          <div class="fc-hint">👆 Click to flip</div></div>
+        <div class="fc-back"><div class="fc-a">Security Assessment & Authorization — the GC's equivalent of ATO (Authorization to Operate). Every GC production system must go through SA&A before launch. DevSecOps helps by generating automated evidence (scan reports, compliance checks) for the SA&A package.</div></div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><div class="fc-cat">Your QA Bridge</div>
+          <div class="fc-q">What is the DevSecOps equivalent of a quality gate?</div>
+          <div class="fc-hint">👆 Click to flip</div></div>
+        <div class="fc-back"><div class="fc-a">A SECURITY GATE — a pipeline checkpoint that automatically blocks a build/deployment if security thresholds aren't met. Example: "Block deployment if SAST finds any Critical severity issue." Same concept as blocking a build with failing test coverage.</div></div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><div class="fc-cat">Real Incident</div>
+          <div class="fc-q">What was the SolarWinds attack and why does it matter for DevSecOps?</div>
+          <div class="fc-hint">👆 Click to flip</div></div>
+        <div class="fc-back"><div class="fc-a">2020 supply chain attack: hackers inserted malicious code into SolarWinds Orion build pipeline. Affected 18,000+ organizations including US gov agencies. Lesson: DevSecOps must secure the BUILD PIPELINE itself — not just the application code. GC now requires supply chain security controls.</div></div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><div class="fc-cat">Acronym</div>
+          <div class="fc-q">What is an SBOM and why does TBS care?</div>
+          <div class="fc-hint">👆 Click to flip</div></div>
+        <div class="fc-back"><div class="fc-a">Software Bill of Materials — a complete inventory of all software components and their versions in an application. TBS recommends SBOMs for GC software so that when a new CVE drops (like Log4Shell), they can instantly know which systems are affected.</div></div>
+      </div>
+    </div>
+
+    <div class="fc" onclick="this.classList.toggle('flipped')">
+      <div class="fc-inner">
+        <div class="fc-front"><div class="fc-cat">Interview Trap</div>
+          <div class="fc-q">"Isn't DevSecOps just DevOps with security?" — How do you answer this?</div>
+          <div class="fc-hint">👆 Click to flip</div></div>
+        <div class="fc-back"><div class="fc-a">No. DevOps treats security as a separate phase (or ignores it). DevSecOps embeds security as a continuous, automated, shared responsibility throughout EVERY stage. The culture shift is as important as the tools — everyone owns security, not just the security team.</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="text-align:center;margin-top:24px;">
+    <button class="btn" onclick="resetCards()">🔄 Reset All Cards</button>
+  </div>
+
+</div>
+
+<!-- ============================================================ QUIZ ============================================================ -->
+<div id="page-quiz" class="page container">
+
+  <h2>🧠 Session 1 Knowledge Check</h2>
+  <p style="color:var(--muted);">You need 4/5 to pass and proceed to Session 2. Answer all questions, then check your score.</p>
+
+  <div id="quiz-form">
+
+    <!-- Q1 -->
+    <div class="quiz-q">
+      <div class="quiz-q-num">Question 1 of 5 — Conceptual</div>
+      <div class="quiz-q-text">In the traditional "waterfall" security model, when does the security team typically review the application?</div>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answer(this,'wrong','A',1)">A) During the initial design phase alongside developers</button>
+        <button class="quiz-opt" onclick="answer(this,'correct','B',1)">B) Near the end of development, just before or after deployment</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','C',1)">C) Continuously throughout every commit and build</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','D',1)">D) Only after a security incident occurs</button>
+      </div>
+      <div id="explain-1" class="quiz-explain">✅ Correct. In the old model, security was a gate at the END — often called "bolt-on security." This is why breaches happened at production. DevSecOps fixes this by embedding security from the very first commit.</div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="quiz-q">
+      <div class="quiz-q-num">Question 2 of 5 — Conceptual</div>
+      <div class="quiz-q-text">Which type of security scan would catch the Log4Shell vulnerability (CVE-2021-44228) in a Java application's dependencies?</div>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answer(this,'wrong','A',2)">A) SAST — because it scans source code for vulnerable patterns</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','B',2)">B) DAST — because it tests the running application with attack payloads</button>
+        <button class="quiz-opt" onclick="answer(this,'correct','C',2)">C) SCA — because it checks third-party libraries against the CVE database</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','D',2)">D) Secret scanning — because Log4Shell was a hardcoded credential</button>
+      </div>
+      <div id="explain-2" class="quiz-explain">✅ Correct. Log4Shell was a vulnerability IN a dependency (log4j-core). SCA tools like Snyk, Dependabot, and pip-audit scan your dependency files against the CVE database. This is exactly why SCA is mandatory in any GC-compliant pipeline.</div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="quiz-q">
+      <div class="quiz-q-num">Question 3 of 5 — Practical Scenario</div>
+      <div class="quiz-q-text">A developer on your GC team commits code with a database password hardcoded in a Python file and pushes to the main branch. As a DevSecOps engineer, which tool should have caught this BEFORE it reached main?</div>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answer(this,'wrong','A',3)">A) DAST — it would detect the exposed password via HTTP response scanning</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','B',3)">B) SCA — it would flag the password as a known CVE</button>
+        <button class="quiz-opt" onclick="answer(this,'correct','C',3)">C) Secret scanning (e.g., detect-secrets, GitGuardian) — it scans for high-entropy strings and known credential patterns on every commit</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','D',3)">D) Azure Policy — it would enforce password rotation on the deployed service</button>
+      </div>
+      <div id="explain-3" class="quiz-explain">✅ Correct. Secret scanning runs as a pre-commit hook or pipeline step on EVERY commit and looks for patterns like passwords, API keys, and tokens. This is a critical GC requirement — secrets in code have caused real federal data breaches. Tools: detect-secrets, GitGuardian, Azure Defender for DevOps.</div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="quiz-q">
+      <div class="quiz-q-num">Question 4 of 5 — Practical Scenario</div>
+      <div class="quiz-q-text">Your team is building a CI/CD pipeline for a GC application handling Protected B data. You want to "shift left" as aggressively as possible. Which ordering of security checks is MOST correct?</div>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answer(this,'wrong','A',4)">A) Deploy → DAST → SAST → Secret Scan → Monitor</button>
+        <button class="quiz-opt" onclick="answer(this,'correct','B',4)">B) Commit → Secret Scan + SAST → Build → SCA → Test → DAST → Deploy → Monitor</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','C',4)">C) Build → SAST → Deploy → Secret Scan → DAST → Monitor</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','D',4)">D) The order doesn't matter as long as all scans run before production</button>
+      </div>
+      <div id="explain-4" class="quiz-explain">✅ Correct. The "most left" checks (secret scan + SAST) run on the raw code before anything else. SCA runs at build time when dependencies are resolved. DAST needs a running app. Each check is placed at the earliest possible point where it can provide value — this is the essence of shift-left.</div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="quiz-q">
+      <div class="quiz-q-num">Question 5 of 5 — 🇨🇦 Federal GC Environment</div>
+      <div class="quiz-q-text">A GC department's Security Assessment & Authorization (SA&A) team asks you to provide "automated security evidence" for their ITSG-33 compliance package. What DevSecOps artifacts would you provide?</div>
+      <div class="quiz-opts">
+        <button class="quiz-opt" onclick="answer(this,'wrong','A',5)">A) A PDF document written by the development team describing their security practices</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','B',5)">B) A penetration testing report from a third-party firm conducted once a year</button>
+        <button class="quiz-opt" onclick="answer(this,'correct','C',5)">C) SAST scan reports, SCA/SBOM outputs, secret scan results, DAST reports, and pipeline security gate logs — all automatically generated on every build</button>
+        <button class="quiz-opt" onclick="answer(this,'wrong','D',5)">D) Screenshot evidence of developers completing security awareness training</button>
+      </div>
+      <div id="explain-5" class="quiz-explain">✅ Correct! This is a CRITICAL GC interview answer. SA&A teams love automated, continuous evidence because it shows security is built-in, not bolt-on. Your pipeline generates SAST reports (mapped to ITSG-33 SI controls), SCA/SBOM (supply chain security), and DAST reports (application security) automatically on every single build. THIS is what gets federal systems approved faster.</div>
+    </div>
+
+    <div style="text-align:center;margin-top:24px;">
+      <button class="btn" onclick="submitQuiz()">📊 Check My Score</button>
+    </div>
+
+  </div>
+
+  <div class="quiz-score" id="quiz-score">
+    <div class="score-num" id="score-display">0/5</div>
+    <h3 id="score-msg"></h3>
+    <p id="score-sub" style="color:var(--muted);margin-bottom:20px;"></p>
+    <button class="btn btn-outline" onclick="resetQuiz()">🔄 Try Again</button>
+  </div>
+
+</div>
+
+<!-- ============================================================ RESOURCES ============================================================ -->
+<div id="page-resources" class="page container">
+
+  <h2>📚 Resources & Session Summary</h2>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">🔗</span> Top Resources for This Session</div>
+
+    <div class="res-item">
+      <div class="res-icon">📘</div>
+      <div>
+        <div class="res-title">Microsoft Learn: DevSecOps Overview</div>
+        <div class="res-desc">Official Microsoft documentation covering DevSecOps practices on Azure — directly relevant to GC Azure environments. Free, interactive modules.</div>
+        <a class="res-link" href="https://learn.microsoft.com/en-us/azure/architecture/solution-ideas/articles/devsecops-in-github" target="_blank">learn.microsoft.com → DevSecOps in GitHub ↗</a>
+      </div>
+    </div>
+
+    <div class="res-item">
+      <div class="res-icon">🇨🇦</div>
+      <div>
+        <div class="res-title">ITSG-33 — CSE Publication</div>
+        <div class="res-desc">The actual Government of Canada security risk management guidance document. Download the Annex 3 (Security Control Catalogue) — it's your new bible for GC compliance work.</div>
+        <a class="res-link" href="https://www.cse-cst.gc.ca/en/node/1292/html/10741" target="_blank">cse-cst.gc.ca → ITSG-33 ↗</a>
+      </div>
+    </div>
+
+    <div class="res-item">
+      <div class="res-icon">🔧</div>
+      <div>
+        <div class="res-title">Semgrep Playground — Try SAST in Browser</div>
+        <div class="res-desc">Run SAST scans directly in your browser. Use the Python rules to see exactly how SAST catches injection vulnerabilities, insecure patterns, and OWASP Top 10 issues.</div>
+        <a class="res-link" href="https://semgrep.dev/playground" target="_blank">semgrep.dev/playground ↗</a>
+      </div>
+    </div>
+
+    <div class="res-item">
+      <div class="res-icon">🎯</div>
+      <div>
+        <div class="res-title">AZ-900 Study Path (Microsoft Learn)</div>
+        <div class="res-desc">Start working through this now. Target: complete by end of Month 1. It's free and the foundation for everything Azure-related in this course.</div>
+        <a class="res-link" href="https://learn.microsoft.com/en-us/certifications/azure-fundamentals/" target="_blank">Microsoft AZ-900 Learning Path ↗</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="icon">🧠</span> Session 1 — Key Takeaways</div>
+    <div class="summary-items">
+      <div class="s-item"><div class="s-item-icon">⬅️</div><div class="s-item-text"><strong>Shift-Left</strong> means catching security issues as early as possible in the SDLC — at the code stage, not post-deployment.</div></div>
+      <div class="s-item"><div class="s-item-icon">🔄</div><div class="s-item-text"><strong>Your QA skills transfer directly:</strong> quality gates → security gates, test automation → security automation, bug tracking → vulnerability management.</div></div>
+      <div class="s-item"><div class="s-item-icon">🛡️</div><div class="s-item-text"><strong>SAST</strong> scans code statically (no running app needed). <strong>DAST</strong> tests live apps. <strong>SCA</strong> checks dependencies for CVEs.</div></div>
+      <div class="s-item"><div class="s-item-icon">🇨🇦</div><div class="s-item-text"><strong>GC mandate:</strong> ITSG-33, PBMM, and the GC Zero Trust Strategy require DevSecOps practices for all federal cloud systems.</div></div>
+      <div class="s-item"><div class="s-item-icon">📋</div><div class="s-item-text"><strong>SA&A evidence</strong> = automated scan reports from your pipeline. This is what GC compliance teams want to see — continuous, automated proof.</div></div>
+      <div class="s-item"><div class="s-item-icon">🚨</div><div class="s-item-text"><strong>Real incidents matter:</strong> GCKey breach (2020), Log4Shell (2021), SolarWinds (2020) — all preventable with DevSecOps practices.</div></div>
+      <div class="s-item"><div class="s-item-icon">👥</div><div class="s-item-text"><strong>3 Pillars:</strong> People (shared responsibility), Process (baked into SDLC), Technology (automated tools in pipelines).</div></div>
+      <div class="s-item"><div class="s-item-icon">🎯</div><div class="s-item-text"><strong>Next session:</strong> DevOps vs DevSecOps — deep dive into exactly where and how the security layer is added to a standard DevOps pipeline.</div></div>
+    </div>
+  </div>
+
+  <div class="alert alert-warn">
+    <div class="alert-title">📌 Before Session 2 — Your Homework</div>
+    <p>1. Complete the lab and push your findings to GitHub (<code>gc-devsecops-portfolio/session-01-shift-left/</code>)</p>
+    <p>2. Start the AZ-900 Microsoft Learn path — complete the first 2 modules</p>
+    <p>3. Read the ITSG-33 overview page (not the full doc — just get familiar with the structure)</p>
+    <p>4. Be ready to submit your lab output at the start of Session 2 for assessment</p>
+  </div>
+
+</div>
+
+<script>
+// PAGE NAVIGATION
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// QUIZ LOGIC
+const answers={};
+const correct={1:'B',2:'C',3:'C',4:'B',5:'C'};
+
+function answer(btn, result, letter, qNum){
+  const opts=btn.closest('.quiz-opts').querySelectorAll('.quiz-opt');
+  opts.forEach(o=>o.disabled=true);
+  btn.classList.add(result);
+  answers[qNum]=letter;
+  const exp=document.getElementById('explain-'+qNum);
+  if(exp){exp.classList.add('show');}
+}
+
+function submitQuiz(){
+  let score=0;
+  for(let i=1;i<=5;i++){if(answers[i]===correct[i])score++;}
+  document.getElementById('quiz-form').style.display='none';
+  const scoreEl=document.getElementById('quiz-score');
+  scoreEl.style.display='block';
+  document.getElementById('score-display').textContent=score+'/5';
+  const msgs=[
+    ['',''],
+    ['Keep pushing, Parinder!','Score 4/5 to proceed. Review the flashcards and theory, then retry.'],
+    ['Getting there!','You need 4/5. Focus on the questions you missed and review the theory block.'],
+    ['Almost!','One more right answer and you proceed. Review the question you missed carefully.'],
+    ['✅ PASS — Proceed to Session 2!','Great work. You demonstrated solid understanding of shift-left security fundamentals.'],
+    ['🏆 PERFECT SCORE!','Outstanding, Parinder. A federal security auditor would be impressed. Proceed to Session 2.']
+  ];
+  document.getElementById('score-msg').textContent=msgs[score][0];
+  document.getElementById('score-sub').textContent=msgs[score][1];
+  document.getElementById('score-display').style.color=score>=4?'var(--accent2)':'var(--accent3)';
+}
+
+function resetQuiz(){
+  answers={};
+  document.getElementById('quiz-form').style.display='block';
+  document.getElementById('quiz-score').style.display='none';
+  document.querySelectorAll('.quiz-opt').forEach(o=>{
+    o.classList.remove('correct','wrong');o.disabled=false;
+  });
+  document.querySelectorAll('.quiz-explain').forEach(e=>e.classList.remove('show'));
+}
+
+function resetCards(){
+  document.querySelectorAll('.fc').forEach(c=>c.classList.remove('flipped'));
+}
+</script>
+
+</body>
+</html>
